@@ -1,0 +1,67 @@
+%include "io.inc"
+section .data
+    num1 DD 10
+    num2 DD 5
+section .text
+global CMAIN
+
+CMAIN:
+    mov ebp, esp; for correct debugging
+    call DIVI
+    xor eax, eax
+    ret
+;--------------------------------------------        
+SUM:
+    mov eax, [num1]
+    add eax, [num2]
+    PRINT_UDEC 4, eax
+    ret   
+;--------------------------------------------
+SUBI:
+    mov eax, [num1]
+    sub eax, [num2]
+    PRINT_UDEC 4, eax 
+    ret
+;--------------------------------------------
+MULTI:  
+    push ecx
+    mov eax, [num1]
+    mov ebx, [num2]
+    mov ecx, eax 
+    mov eax, 0
+    ;ebx = contador de programa 
+    ;5+5    0
+ERRO:
+.loop1:
+    add eax, ebx 
+    loop .loop1
+    PRINT_UDEC 4, eax
+    pop ecx
+    ret
+;----------46: e---------------------------------
+DIVI:
+    push ecx
+    mov ecx, 0 
+    and ebx, ebx
+    jz ERRO
+    
+.loop1:
+    inc ecx
+    sub eax, ebx
+    jns .loop1
+    dec ecx
+    xchg eax, ecx 
+    PRINT_UDEC 4, eax
+fim_divide:
+    pop ecx
+    ret
+;--------------------------------------------        
+    ;mov eax, [num1]
+    ;mov ebx, [num2]
+    ;mov ecx, eax
+    ;mov eax, 0
+    ;mov edx, 0
+    ;loop2:
+    ;sub eax, ebx
+    ;add edx, 1
+      
