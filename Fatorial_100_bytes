@@ -1,0 +1,108 @@
+;   Autores:
+;   1. Emerson Nunes dos Santos - 403291 
+;   2. Sávia Rafaella Lopes Fernandes - 385177
+
+%include "io.inc"
+section .bss
+    num RESD 25
+    aux RESD 25
+    cont RESD 1
+section .text
+global CMAIN
+CMAIN:
+    mov ebp, esp; for correct debugging
+    mov edx, 24;índice de posicao - 24 posicoes de 4bytes
+    GET_UDEC 4, [num+(edx*4)];leitura do numero fatorial
+    mov eax, [num+(edx*4)];valor do numero passado para eax
+    mov [aux+(24*4)], eax;uso do eax para copiar o numero para outra array auxiliar
+    mov ecx, eax ;ecx será o índice da quantidade de vezes que o fatorial irá calcular
+    mov edi, 0;carry
+    sub ecx, 2;registrador para somar no cálculo do fatorial
+    and eax, eax;tratamento para o fatorial de 0, 1 e 2
+    cmp eax, 2;tratamento para o fatorial de 0, 1 e 2
+    jle casos;tratamento para o fatorial de 0, 1 e 2
+    jmp fatorial;o código comeca pelo cálculo do fatorial
+    
+;--------------------------------------------------------------------------------------------------------  
+    carry1:
+        add [num+edx*4], edi;adiciona o carry ao valor na posicao da array
+        mov edi, 1;atualiza o próximo carry
+        jmp ret_carry;retorna 0
+;--------------------------------------------------------------------------------------------------------  
+    copiar:;copiar os valor da array número para o auxiliar
+        mov eax, [num+(edx*4)];coloca cada posição no registrador eax 
+        mov [aux+(edx*4)], eax;coloca cada posicao da array numero para o array auxiliar
+        dec edx;diminui 1 para ir para a próxima posição
+    jns copiar;se for negativo, acaba o laço 
+    jmp voltar
+;--------------------------------------------------------------------------------------------------------  
+    fatorial:;primeiro cálculo do fatorial onde terá a soma
+        mov esi, ecx;guarda o valor do registrador pois ele será alterado
+        fatorial_pos2:
+            push edx;guarda o valor do registrador pois ele será alterado
+            fatorial_pos:
+                mov eax, [aux+(edx*4)];guarda no registrador as poicoes da array auxiliar 
+                add [num+(edx*4)], eax;somar nas mesmas posicoes dos dois arrayes
+                jc carry1;caso se houver carry -> pula para o carry1
+                add [num+(edx*4)], edi;soma do carry da operação anterior na posição atual
+                jnc zerar_carry;se não houver carry, atualiza o próximo carry para 0
+                mov edi, 1;pulou a condição, deu carry então coloca o valor 1
+                jmp ret_carry;pula a operação de alterar o carry
+;--------------------------------------------------------------------------------------------------------            
+        zerar_carry:
+                mov edi, 0;zera o carry
+;--------------------------------------------------------------------------------------------------------            
+            ret_carry:
+                dec edx;decrementa a posição
+                jns fatorial_pos;verifica se é negativo. Se for, pula para o início do fatorial. 
+            sair:
+                pop edx;desempilha o registrador de posição
+            loop fatorial_pos2;retorna para a operação de fatorial
+    push edx;desempilha o registrador edx
+    jmp copiar
+;--------------------------------------------------------------------------------------------------------  
+    voltar:
+         pop edx;desempilha o valor real do registrador
+         mov ecx, esi;guarda o valor no registrador ecx
+         dec ecx;decrementa indo para a próxima posição 
+         dec esi;decrementa
+         jnz fatorial_pos2;enquanto não zerar, permanece na operação do fatorial
+    jmp valor_final
+;--------------------------------------------------------------------------------------------------------    
+    valor_final:
+;--------------------------------------------------------------------------------------------------------  
+    printar:;imprimir o resultado do fatorial
+        mov ecx, 25;tamanho no registrador
+        mov edx, 0;zera o registrador
+        PRINT_STRING "Em hexadecimal: "
+        loop_printar:;printar todas as posições calculadas
+            PRINT_HEX 4, [num+(edx*4)];mostrando o valor do fatorial de 4 em 4 bytes
+            inc edx;para printar a próxima posição
+        loop loop_printar
+    jmp fim;sai do programa
+;--------------------------------------------------------------------------------------------------------  
+    casos:;tratamento de casos para (0, 1 e 2) fatorial
+        and eax, eax;realiza a operação and com o próprio número 
+        jz zero
+        PRINT_STRING "Em hexadecimal: "
+        mov ecx, 24
+        caso1_2:;tratamento para os casos 2 e 1         
+        PRINT_HEX 4, 0;imprime os zeros antes do real número
+        loop caso1_2
+        PRINT_HEX 4, eax
+        jmp fim;sai do programa 
+;--------------------------------------------------------------------------------------------------------    
+    zero:;tratamento para o caso de 0!
+        PRINT_STRING "Em hexadecimal: "
+        mov ecx, 24;quantidade de posições 
+        zero1:
+        PRINT_HEX 4, 0;imprime os zeros antes do rel número
+        loop zero1
+        PRINT_HEX 4, 1;resultado de 0!
+;--------------------------------------------------------------------------------------------------------  
+    fim:;sai do programa
+    xor eax, eax
+    ret
+;--------------------------------------------------------------------------------------------------------  
+
+;                                May the force be with you.      
